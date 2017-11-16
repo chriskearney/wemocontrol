@@ -4,7 +4,7 @@
         <#list switches>
         <ul>
         <#items as switch>
-            <li>${switch}</li>
+            <li><a href="/wemo/${getUrlSafe(switch)}/toggle">${switch}</a></li>
         </#items>
        </ul>
        </#list>

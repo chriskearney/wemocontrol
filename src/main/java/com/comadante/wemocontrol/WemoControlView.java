@@ -3,6 +3,8 @@ package com.comadante.wemocontrol;
 import io.dropwizard.views.View;
 import org.cybergarage.upnp.Device;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +26,10 @@ public class WemoControlView extends View {
                 .stream()
                 .map(Device::getFriendlyName)
                 .collect(Collectors.toList());
+    }
+
+    public String getUrlSafe(String friendlyName) throws UnsupportedEncodingException {
+        return URLEncoder.encode(friendlyName, "ISO-8859-1").replace("+", "%20");
     }
 
 }
