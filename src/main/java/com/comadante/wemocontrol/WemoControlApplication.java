@@ -5,6 +5,7 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+import org.cybergarage.upnp.Device;
 
 public class WemoControlApplication extends Application<WemoControlConfiguration> {
     public static void main(String[] args) throws Exception {
@@ -25,7 +26,17 @@ public class WemoControlApplication extends Application<WemoControlConfiguration
     public void run(WemoControlConfiguration configuration,
                     Environment environment) {
 
-        WemoControlService wemoControlService = new WemoControlService();
+        WemoControlService wemoControlService = new WemoControlService(new WemoControlService.DevicePresenceConsumer() {
+            @Override
+            public void run(WemoControlDevice device) {
+
+            }
+        }, new WemoControlService.DeviceStateCheckConsumer() {
+            @Override
+            public void run(WemoControlDevice device) {
+                //
+            }
+        });
         environment.lifecycle().manage(new Managed() {
             @Override
             public void start() throws Exception {

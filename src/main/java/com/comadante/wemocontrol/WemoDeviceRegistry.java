@@ -7,27 +7,30 @@ import org.cybergarage.upnp.*;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 public class WemoDeviceRegistry {
 
-    private final Map<String, Device> devices = Maps.newConcurrentMap();
+    private final Map<String, WemoControlDevice> devices = Maps.newConcurrentMap();
     private final Interner<String> deviceInterner = Interners.newStrongInterner();
 
-    public void addDevice(Device device) {
-        synchronized (deviceInterner.intern(device.getFriendlyName())) {
-            this.devices.put(device.getFriendlyName(), device);
+    public void addDevice(WemoControlDevice wemoControlDevice) {
+        synchronized (deviceInterner.intern(wemoControlDevice.getDevice().getFriendlyName())) {
+            this.devices.put(wemoControlDevice.getDevice().getFriendlyName(), wemoControlDevice);
+            boolean on = on(wemoControlDevice.getDevice().getFriendlyName());
+            wemoControlDevice.setState(on);
         }
     }
 
-    public void removeDevice(Device device) {
-        synchronized (deviceInterner.intern(device.getFriendlyName())) {
-            this.devices.remove(device.getFriendlyName());
+    public void removeDevice(String friendlyName) {
+        synchronized (deviceInterner.intern(friendlyName)) {
+            this.devices.remove(friendlyName);
         }
     }
 
     public void turnOn(String friendlyName) {
         synchronized (deviceInterner.intern(friendlyName)) {
-            Action action = devices.get(friendlyName).getAction("SetBinaryState");
+            Action action = devices.get(friendlyName).getDevice().getAction("SetBinaryState");
             action.setArgumentValue("BinaryState", 1);
             performAction(action);
         }
@@ -35,7 +38,7 @@ public class WemoDeviceRegistry {
 
     public void turnOff(String friendlyName) {
         synchronized (deviceInterner.intern(friendlyName)) {
-            Action action = devices.get(friendlyName).getAction("SetBinaryState");
+            Action action = devices.get(friendlyName).getDevice().getAction("SetBinaryState");
             action.setArgumentValue("BinaryState", 0);
             performAction(action);
         }
@@ -50,7 +53,7 @@ public class WemoDeviceRegistry {
 
     public void toggle(String friendlyName) {
         synchronized (deviceInterner.intern(friendlyName)) {
-            Action getBinaryStateAction = devices.get(friendlyName).getAction("GetBinaryState");
+            Action getBinaryStateAction = devices.get(friendlyName).getDevice().getAction("GetBinaryState");
             performAction(getBinaryStateAction);
             int binaryState = Integer.valueOf(getBinaryStateAction.getArgumentValue("BinaryState"));
             if (binaryState == 1) {
@@ -61,9 +64,23 @@ public class WemoDeviceRegistry {
         }
     }
 
-    public Collection<Device> getDevices() {
+    public Collection<WemoControlDevice> getDevices() {
         return devices.values();
     }
 
+    public Optional<WemoControlDevice> getDevice(String friendlyName) {
+        return Optional.of(devices.get(friendlyName));
+    }
 
+
+    public boolean on(String friendlyName) {
+        Action getBinaryStateAction = devices.get(friendlyName).getDevice().getAction("GetBinaryState");
+        performAction(getBinaryStateAction);
+        int binaryState = Integer.valueOf(getBinaryStateAction.getArgumentValue("BinaryState"));
+        if (binaryState == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -24,7 +24,7 @@ public class WemoControlView extends View {
     public List<String> getSwitches() {
         return wemoControlService.getDevices()
                 .stream()
-                .map(Device::getFriendlyName)
+                .map((WemoControlDevice t) -> t.getDevice().getFriendlyName())
                 .collect(Collectors.toList());
     }
 
